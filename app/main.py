@@ -7,11 +7,13 @@ app = FastAPI()
 class Document(BaseModel):
     text: str
 
+
 @app.get("/")
 def home():
     return {"message": "Agentic AI backend running"}
 
+
 @app.post("/analyze")
 def analyze(doc: Document):
-
-    return analyze_document(doc.text)
+    result = analyze_document(doc.text)
+    return result
