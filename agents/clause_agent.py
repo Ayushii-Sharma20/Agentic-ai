@@ -4,31 +4,25 @@ classifier = pipeline(
     "zero-shot-classification",
     model="typeform/distilbert-base-uncased-mnli"
 )
+
 labels = [
-    "Data Sharing",
+    "Data sharing",
     "Arbitration",
-    "Auto Renewal",
+    "Auto renewal",
     "Liability",
     "Tracking",
-    "User Rights",
+    "User rights",
     "Subscription"
 ]
+
 def analyze_clauses(text):
 
     clauses = []
 
-    text = text.lower()
+    result = classifier(text[:1200], labels)
 
-    if "data" in text and "share" in text:
-        clauses.append("Data Sharing Clause")
-
-    if "track" in text or "tracking" in text:
-        clauses.append("User Tracking")
-
-    if "third party" in text:
-        clauses.append("Third‑Party Data Access")
-
-    if "terminate" in text:
-        clauses.append("Account Termination Rights")
+    for label, score in zip(result["labels"], result["scores"]):
+        if score > 0.5:
+            clauses.append(label)
 
     return clauses

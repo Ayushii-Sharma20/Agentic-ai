@@ -7,10 +7,7 @@ summarizer = pipeline(
 
 def summarize_text(text):
 
-    if len(text) < 50:
-        return "Text too short to summarize."
-
-    text = text[:2000]
+    text = text[:1500]
 
     result = summarizer(
         text,
