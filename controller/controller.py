@@ -1,3 +1,5 @@
+from agents.summarize_agent import summarize_text
+from agents.clause_agent import analyze_risk
 def analyze_document(text):
 
     summary = summarize_text(text)
@@ -16,3 +18,4 @@ def analyze_document(text):
         "clauses": clauses,
         "risk": risk
     }
+\
