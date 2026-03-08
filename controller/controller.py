@@ -1,17 +1,18 @@
-from agents.summarize_agent import summarize_text
-from agents.clause_agent import extract_clauses
-from agents.risk_agent import detect_risk
-
 def analyze_document(text):
 
     summary = summarize_text(text)
+    clauses = detect_clauses(text)
 
-    clauses = extract_clauses(text)
+    risk = "Low"
 
-    risks = detect_risk(clauses)
+    if "Data Sharing" in clauses:
+        risk = "Medium"
+
+    if "Arbitration" in clauses or "Auto Renewal" in clauses:
+        risk = "High"
 
     return {
         "summary": summary,
         "clauses": clauses,
-        "risks": risks
+        "risk": risk
     }
