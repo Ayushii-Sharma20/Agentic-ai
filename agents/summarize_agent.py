@@ -8,12 +8,13 @@ summarizer = pipeline(
 def summarize_text(text):
 
     text = text[:1500]
-
+    simple_prompt = "Explain this in very simple English for a class 2 student: " + text
     result = summarizer(
-        text,
-        max_length=120,
-        min_length=30,
+        simple_prompt,
+        max_length=60,
+        min_length=25,
         do_sample=False
     )
+
 
     return result[0]["summary_text"]

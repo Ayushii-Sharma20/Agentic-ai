@@ -15,14 +15,19 @@ labels = [
     "Subscription"
 ]
 
+
 def analyze_clauses(text):
 
     clauses = []
 
-    result = classifier(text[:1200], labels)
+    # limit text length for performance
+    text = text[:3000]
+
+    result = classifier(text, labels)
 
     for label, score in zip(result["labels"], result["scores"]):
-        if score > 0.5:
+
+        if score > 0.3 and label not in clauses:
             clauses.append(label)
 
     return clauses
