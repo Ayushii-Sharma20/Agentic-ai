@@ -18,4 +18,3 @@ def analyze_document(text):
         "clauses": clauses,
         "risk": risk
     }
-\
