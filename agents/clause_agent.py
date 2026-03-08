@@ -2,9 +2,8 @@ from transformers import pipeline
 
 classifier = pipeline(
     "zero-shot-classification",
-    model="facebook/bart-large-mnli"
+    model="typeform/distilbert-base-uncased-mnli"
 )
-
 labels = [
     "Data Sharing",
     "Arbitration",
@@ -14,15 +13,22 @@ labels = [
     "User Rights",
     "Subscription"
 ]
+def analyze_clauses(text):
 
-def detect_clauses(text):
+    clauses = []
 
-    result = classifier(text[:1000], labels)
+    text = text.lower()
 
-    detected = {}
+    if "data" in text and "share" in text:
+        clauses.append("Data Sharing Clause")
 
-    for label, score in zip(result["labels"], result["scores"]):
-        if score > 0.5:
-            detected[label] = round(score,2)
+    if "track" in text or "tracking" in text:
+        clauses.append("User Tracking")
 
-    return detected
+    if "third party" in text:
+        clauses.append("Third‑Party Data Access")
+
+    if "terminate" in text:
+        clauses.append("Account Termination Rights")
+
+    return clauses

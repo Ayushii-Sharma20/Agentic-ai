@@ -7,12 +7,14 @@ summarizer = pipeline(
 
 def summarize_text(text):
 
-    # limit text length to avoid model crash
+    if len(text) < 50:
+        return "Text too short to summarize."
+
     text = text[:2000]
 
     result = summarizer(
         text,
-        max_length=180,
+        max_length=120,
         min_length=30,
         do_sample=False
     )

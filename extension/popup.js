@@ -17,7 +17,7 @@ document.getElementById("analyzeBtn").addEventListener("click", async () => {
     },
     async(results)=>{
 
-        const pageText = results[0].result.slice(0,1500);
+      const pageText = results[0].result.slice(0,800);
 
         const response = await fetch("http://127.0.0.1:8000/analyze",{
             method:"POST",
