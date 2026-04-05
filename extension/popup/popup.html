@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Terms Analyzer</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <div class="logo">
+        <span class="logo-icon">⚖️</span>
+        <div>
+          <h1 class="title">Terms Analyzer</h1>
+          <span class="subtitle">AI-Powered Privacy Guard</span>
+        </div>
+      </div>
+      <div class="status-dot" id="statusDot" title="API Status"></div>
+    </header>
+
+    <div class="page" id="homePage">
+      <div class="info-card" id="pageInfo">
+        <div class="page-url" id="pageUrl">Loading...</div>
+        <div class="page-type" id="pageType"></div>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-primary" id="analyzePageBtn">
+          <span class="btn-icon">🔍</span>
+          Analyze This Page
+        </button>
+        <button class="btn btn-secondary" id="analyzeSelectedBtn" disabled>
+          <span class="btn-icon">✂️</span>
+          Analyze Selected Text
+        </button>
+      </div>
+
+      <div class="divider">
+        <span>or paste text</span>
+      </div>
+
+      <div class="paste-area">
+        <textarea 
+          id="pasteText" 
+          placeholder="Paste Terms & Conditions or Privacy Policy text here..."
+          rows="5"
+        ></textarea>
+        <button class="btn btn-outline" id="analyzePasteBtn">
+          Analyze Text
+        </button>
+      </div>
+
+      <div class="recent-section" id="recentSection">
+        <h3 class="section-title">Recent Analyses</h3>
+        <div class="recent-list" id="recentList"></div>
+      </div>
+    </div>
+
+    <div class="page hidden" id="loadingPage">
+      <div class="loading-container">
+        <div class="spinner"></div>
+        <div class="loading-steps">
+          <div class="step" id="step1">
+            <span class="step-icon">📝</span>
+            <span class="step-text">Summarizing document...</span>
+          </div>
+          <div class="step" id="step2">
+            <span class="step-icon">🔎</span>
+            <span class="step-text">Detecting clauses...</span>
+          </div>
+          <div class="step" id="step3">
+            <span class="step-icon">⚠️</span>
+            <span class="step-text">Assessing risks...</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="page hidden" id="resultsPage">
+      <div class="risk-banner" id="riskBanner">
+        <div class="risk-icon" id="riskIcon"></div>
+        <div class="risk-info">
+          <div class="risk-level" id="riskLevel"></div>
+          <div class="risk-recommendation" id="riskRecommendation"></div>
+        </div>
+        <div class="risk-score" id="riskScore"></div>
+      </div>
+
+      <div class="summary-section">
+        <h3 class="section-title">Summary</h3>
+        <p class="summary-text" id="summaryText"></p>
+      </div>
+
+      <div class="concerns-section" id="concernsSection">
+        <h3 class="section-title">⚠️ Key Concerns</h3>
+        <ul class="concerns-list" id="concernsList"></ul>
+      </div>
+
+      <div class="clauses-section">
+        <h3 class="section-title">Detected Clauses <span class="clause-count" id="clauseCount"></span></h3>
+        <div class="clauses-list" id="clausesList"></div>
+      </div>
+
+      <div class="footer-actions">
+        <button class="btn btn-outline btn-small" id="highlightBtn">
+          Highlight on Page
+        </button>
+        <button class="btn btn-outline btn-small" id="backBtn">
+          ← Back
+        </button>
+      </div>
+    </div>
+
+    <div class="page hidden" id="errorPage">
+      <div class="error-container">
+        <div class="error-icon">❌</div>
+        <div class="error-message" id="errorMessage"></div>
+        <button class="btn btn-outline" id="retryBtn">Try Again</button>
+      </div>
+    </div>
+  </div>
+  <script src="../utils/api.js"></script>
+  <script src="../utils/storage.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>
