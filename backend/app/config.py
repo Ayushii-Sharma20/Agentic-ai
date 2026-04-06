@@ -1,4 +1,4 @@
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from functools import lru_cache
 
 class Settings(BaseSettings):
@@ -16,9 +16,9 @@ class Settings(BaseSettings):
     CLASSIFIER_MODEL: str = "facebook/bart-large-mnli"
     
     # Agent Settings
-    MAX_SUMMARY_LENGTH: int = 150
-    MIN_SUMMARY_LENGTH: int = 50
-    CHUNK_SIZE: int = 1024  # tokens
+    MAX_SUMMARY_LENGTH: int = 70
+    MIN_SUMMARY_LENGTH: int = 20
+    CHUNK_SIZE: int = 500  # tokens
     
     # Cache Settings
     ENABLE_CACHE: bool = True
@@ -41,8 +41,7 @@ class Settings(BaseSettings):
         "privacy rights"
     ]
     
-    class Config:
-        env_file = ".env"
+    model_config = SettingsConfigDict(env_file=".env")
 
 @lru_cache()
 def get_settings():

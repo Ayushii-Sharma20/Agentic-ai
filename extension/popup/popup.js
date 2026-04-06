@@ -1,7 +1,5 @@
 // popup.js — main popup controller
 
-const API_BASE = 'http://localhost:8000/api/v2';
-
 // Page state
 let currentPage = 'home';
 let currentAnalysis = null;
@@ -22,16 +20,27 @@ document.addEventListener('DOMContentLoaded', async () => {
   currentTab = await getCurrentTab();
 
   updatePageInfo();
+  updateAnalyzeButtons();
   checkApiStatus();
   loadRecentAnalyses();
   setupEventListeners();
   checkForSelectedText();
 });
 
+function updateAnalyzeButtons() {
+  const disabled = !isValidTab(currentTab);
+  document.getElementById('analyzePageBtn').disabled = disabled;
+  document.getElementById('analyzeSelectedBtn').disabled = disabled || document.getElementById('analyzeSelectedBtn').disabled;
+}
+
 async function getCurrentTab() {
   return new Promise(resolve => {
-    chrome.tabs.query({ active: true, currentWindow: true }, tabs => resolve(tabs[0]));
+    chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => resolve(tabs?.[0] || null));
   });
+}
+
+function isValidTab(tab) {
+  return tab && typeof tab.id === 'number' && tab.id >= 0;
 }
 
 // ──────────────────────────────────────────
@@ -63,8 +72,8 @@ async function checkApiStatus() {
   const dot = document.getElementById('statusDot');
   dot.className = 'status-dot checking';
   try {
-    const res = await fetch(`${API_BASE}/health`, { signal: AbortSignal.timeout(3000) });
-    dot.className = res.ok ? 'status-dot online' : 'status-dot offline';
+    const res = await ApiUtil.health();
+    dot.className = res.status === 'healthy' ? 'status-dot online' : 'status-dot offline';
   } catch {
     dot.className = 'status-dot offline';
   }
@@ -108,18 +117,7 @@ async function runAnalysis(text, url = '') {
 }
 
 async function analyzeText(text, url) {
-  const res = await fetch(`${API_BASE}/analyze`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ text, url }),
-  });
-
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.detail || `API error: ${res.status}`);
-  }
-
-  return res.json();
+  return ApiUtil.analyze(text, url);
 }
 
 // ──────────────────────────────────────────
@@ -240,6 +238,10 @@ function setupEventListeners() {
   // Analyze page
   document.getElementById('analyzePageBtn').addEventListener('click', async () => {
     try {
+      if (!isValidTab(currentTab)) {
+        throw new Error('Cannot access the current page. Open this popup from a normal browser tab.');
+      }
+
       const [{ result }] = await chrome.scripting.executeScript({
         target: { tabId: currentTab.id },
         func: () => document.body.innerText,
@@ -249,7 +251,7 @@ function setupEventListeners() {
       }
       await runAnalysis(result.slice(0, 50000), currentTab.url);
     } catch (err) {
-      document.getElementById('errorMessage').textContent = err.message;
+      document.getElementById('errorMessage').textContent = err?.message || 'An unexpected error occurred.';
       showPage('error');
     }
   });
@@ -257,6 +259,9 @@ function setupEventListeners() {
   // Analyze selected text
   document.getElementById('analyzeSelectedBtn').addEventListener('click', async () => {
     try {
+      if (!isValidTab(currentTab)) {
+        throw new Error('Cannot access the current page. Open this popup from a normal browser tab.');
+      }
       const [{ result }] = await chrome.scripting.executeScript({
         target: { tabId: currentTab.id },
         func: () => window.getSelection()?.toString() || '',

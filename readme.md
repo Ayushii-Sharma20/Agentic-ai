@@ -1,6 +1,6 @@
 # AI Terms Analyzer
 
-A Chrome extension + FastAPI backend that analyzes Terms & Conditions using a **3-agent AI pipeline** (Claude). Instantly understand what you're agreeing to before clicking "I Accept".
+A Chrome extension + FastAPI backend that analyzes Terms & Conditions using a **3-agent AI pipeline** with Hugging Face transformers. Instantly understand what you're agreeing to before clicking "I Accept".
 
 ## Features
 
@@ -28,9 +28,6 @@ ai-terms-analyzer/
 
 ```bash
 cd backend
-cp .env.example .env
-# Add your ANTHROPIC_API_KEY to .env
-
 pip install -r requirements.txt
 uvicorn app.main:app --reload
 ```
@@ -38,9 +35,6 @@ uvicorn app.main:app --reload
 ### 2. Docker
 
 ```bash
-cp backend/.env.example backend/.env
-# Add your ANTHROPIC_API_KEY
-
 docker-compose up --build
 ```
 

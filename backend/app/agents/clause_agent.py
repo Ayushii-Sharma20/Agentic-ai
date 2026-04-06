@@ -120,45 +120,49 @@ class ClauseDetectionAgent(BaseAgent):
         )
     
     def process(self, input_data: dict) -> dict:
-        """
-        Detect and classify clauses
-        
-        Args:
-            input_data: {"text": str}
-        
-        Returns:
-            {"clauses": List[DetectedClause], "total_found": int}
-        """
-        text = input_data["text"]
-        
-        # Extract sentences
-        sentences = self._extract_sentences(text)
-        
-        detected_clauses = []
-        
-        for sentence, start, end in sentences:
-            # Classify sentence
+     text = input_data.get("text", "")
+
+     if not text:
+        return {
+            "clauses": [],
+            "total_found": 0,
+            "sentences_analyzed": 0
+        }
+
+     # 🔥 Lazy load model
+     if not hasattr(self, "model") or self.model is None:
+        self.load()
+
+     # Extract sentences (limit for speed)
+     sentences = self._extract_sentences(text)[:5]
+
+     detected_clauses = []
+
+     for sentence, start, end in sentences:
+        try:
+            # ✅ SINGLE sentence (FIXED)
             result = self.model(
                 sentence,
                 candidate_labels=settings.CLAUSE_CATEGORIES,
                 multi_label=True
             )
-            
-            # Get top classification
-            top_label = result['labels'][0]
-            top_score = result['scores'][0]
-            
-            # Only keep if confidence > 0.5
+
+            # ✅ Handle list response (VERY IMPORTANT)
+            if isinstance(result, list):
+                result = result[0]
+
+            top_label = result["labels"][0]
+            top_score = result["scores"][0]
+
             if top_score < 0.5:
                 continue
-            
-            # Assess risk
+
+            # Risk assessment
             risk = self._assess_clause_risk(top_label, sentence)
-            
-            # Skip low-risk clauses unless very confident
+
             if risk == RiskLevel.LOW and top_score < 0.7:
                 continue
-            
+
             clause = DetectedClause(
                 category=top_label,
                 text=sentence,
@@ -167,17 +171,21 @@ class ClauseDetectionAgent(BaseAgent):
                 explanation=self._generate_explanation(top_label, risk),
                 position={"start": start, "end": end}
             )
-            
+
             detected_clauses.append(clause)
-        
-        # Sort by risk level then confidence
-        risk_order = {RiskLevel.HIGH: 0, RiskLevel.MEDIUM: 1, RiskLevel.LOW: 2}
-        detected_clauses.sort(
-            key=lambda x: (risk_order[x.risk_level], -x.confidence)
-        )
-        
-        return {
-            "clauses": detected_clauses,
-            "total_found": len(detected_clauses),
-            "sentences_analyzed": len(sentences)
-        }
+
+        except Exception as e:
+            print("❌ Clause error:", e)
+            continue
+
+     # Sort results
+     risk_order = {RiskLevel.HIGH: 0, RiskLevel.MEDIUM: 1, RiskLevel.LOW: 2}
+     detected_clauses.sort(
+        key=lambda x: (risk_order[x.risk_level], -x.confidence)
+     )
+
+     return {
+      "clauses": detected_clauses,
+     "total_found": len(detected_clauses),
+     "sentences_analyzed": len(sentences)
+    }

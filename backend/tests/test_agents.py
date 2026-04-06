@@ -11,9 +11,7 @@ from app.models.schemas import RiskLevel, DetectedClause
 from app.agents.risk_agent import RiskAssessmentAgent
 
 
-# ─────────────────────────────────────────────
-# Shared fixtures
-# ─────────────────────────────────────────────
+
 
 SAMPLE_TEXT = """
 We collect personally identifiable information including your name, email address, phone number,
@@ -33,9 +31,6 @@ def make_clause(risk: RiskLevel, confidence: float = 0.9, category: str = "data 
     )
 
 
-# ─────────────────────────────────────────────
-# Risk Assessment Agent tests
-# ─────────────────────────────────────────────
 
 class TestRiskAssessmentAgent:
     def setup_method(self):
@@ -94,14 +89,10 @@ class TestRiskAssessmentAgent:
         assert "execution_time" in result
 
 
-# ─────────────────────────────────────────────
-# Summarizer Agent tests (with mocked model)
-# ─────────────────────────────────────────────
-
 class TestSummarizerAgent:
     def setup_method(self):
         # Import here so model is not loaded during setup
-        from app.agents.summarizer_agent import SummarizerAgent
+        from app.agents.summarize_agent import SummarizerAgent
         self.agent = SummarizerAgent()
 
     def test_chunk_text_splits_correctly(self):
@@ -123,7 +114,7 @@ class TestSummarizerAgent:
         # Should be split into shorter parts
         assert len(result) > 0
 
-    @patch('app.agents.summarizer_agent.pipeline')
+    @patch('app.agents.summarize_agent.pipeline')
     def test_process_calls_model(self, mock_pipeline):
         mock_model = MagicMock()
         mock_model.return_value = [{'summary_text': 'Test summary output.'}]
@@ -138,9 +129,6 @@ class TestSummarizerAgent:
         assert isinstance(result["summary"], str)
 
 
-# ─────────────────────────────────────────────
-# Clause Detection Agent tests (with mocked model)
-# ─────────────────────────────────────────────
 
 class TestClauseDetectionAgent:
     def setup_method(self):

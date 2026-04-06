@@ -4,9 +4,6 @@
 
 ```bash
 cd backend
-cp .env.example .env
-# Set ANTHROPIC_API_KEY in .env
-
 pip install -r requirements.txt
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
@@ -14,23 +11,19 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ## Docker (Recommended)
 
 ```bash
-cp backend/.env.example backend/.env
-# Set ANTHROPIC_API_KEY in backend/.env
-
 docker-compose up --build
 # Backend available at http://localhost:8000
 ```
 
 ## Production Deployment
 
-### Environment Variables (Required)
+### Environment Variables (Optional)
 
-| Variable | Description |
-|----------|-------------|
-| `ANTHROPIC_API_KEY` | Your Anthropic API key |
-| `SECRET_KEY` | Random secret (use `openssl rand -hex 32`) |
-| `APP_ENV` | Set to `production` |
-| `DEBUG` | Set to `false` |
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `SECRET_KEY` | Random secret for security | Auto-generated |
+| `APP_ENV` | Environment (`development`/`production`) | `development` |
+| `DEBUG` | Enable debug mode | `true` in development |
 
 ### Recommended: Railway / Render / Fly.io
 

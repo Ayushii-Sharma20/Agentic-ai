@@ -1,8 +1,22 @@
 # API Documentation
 
-Base URL: `http://localhost:8000/api/v1`
+Base URL: `http://localhost:8000/api/v2`
 
 ---
+
+## GET /health
+
+Health check endpoint.
+
+### Response
+
+```json
+{
+  "status": "healthy",
+  "version": "2.0.0",
+  "agents_loaded": true
+}
+```
 
 ## POST /analyze
 
@@ -26,28 +40,40 @@ Analyze a Terms & Conditions document through the 3-agent pipeline.
 
 ```json
 {
-  "url": "https://example.com/terms",
-  "from_cache": false,
-  "text_length": 12345,
-  "summary": {
-    "summary": "Plain-English summary...",
-    "key_points": ["Point 1", "Point 2"],
-    "data_collection": "What data is collected",
-    "user_rights": "What rights you have",
-    "company_rights": "What the company can do",
-    "word_count": 3200
-  },
-  "clauses": {
-    "total_clauses_found": 4,
-    "clauses": [
-      {
-        "type": "arbitration",
-        "title": "Mandatory Arbitration",
-        "excerpt": "All disputes shall be resolved...",
-        "explanation": "You cannot sue in regular court",
-        "severity": "high"
+  "summary": "Plain-English summary of the document...",
+  "risk_level": "Medium",
+  "risk_score": 45,
+  "recommendation": "Read Carefully",
+  "clauses": [
+    {
+      "category": "data collection",
+      "text": "We collect personally identifiable information...",
+      "confidence": 0.85,
+      "risk_level": "High",
+      "explanation": "This collects very sensitive personal information...",
+      "position": {
+        "start": 123,
+        "end": 456
       }
-    ]
+    }
+  ],
+  "key_concerns": [
+    "Data collection: This collects very sensitive personal information...",
+    "Arbitration clause: You cannot sue in court or join class-action lawsuits."
+  ],
+  "processing_time": 2.34
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| summary | string | AI-generated plain-English summary |
+| risk_level | string | Overall risk: "Low", "Medium", "High" |
+| risk_score | int | Risk score 0-100 |
+| recommendation | string | User recommendation: "Safe to Accept", "Read Carefully", "Not Recommended" |
+| clauses | array | Detected clauses with details |
+| key_concerns | array | Top risk concerns |
+| processing_time | float | Processing time in seconds |
   },
   "risk": {
     "overall_score": 35,

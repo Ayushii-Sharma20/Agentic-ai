@@ -44,12 +44,25 @@ class InMemoryCache:
         self._store[key] = {'value': value, 'timestamp': time.time()}
         logger.debug(f"Cache SET for key {key[:8]}...")
 
-    def invalidate(self, text: str) -> bool:
-        key = self._make_key(text)
-        if key in self._store:
+    def get_by_key(self, key: str) -> Optional[Any]:
+        entry = self._store.get(key)
+        if not entry:
+            return None
+        if time.time() - entry['timestamp'] > self.ttl:
             del self._store[key]
-            return True
-        return False
+            logger.debug(f"Cache expired for key {key[:8]}...")
+            return None
+        logger.debug(f"Cache HIT for key {key[:8]}...")
+        return entry['value']
+
+    def set_by_key(self, key: str, value: Any) -> None:
+        if len(self._store) >= self.max_size:
+            # Evict oldest entry
+            oldest = min(self._store.items(), key=lambda x: x[1]['timestamp'])
+            del self._store[oldest[0]]
+
+        self._store[key] = {'value': value, 'timestamp': time.time()}
+        logger.debug(f"Cache SET for key {key[:8]}...")
 
     def clear(self) -> int:
         count = len(self._store)

@@ -5,7 +5,7 @@
 ```
 Browser (Chrome Extension)
         │
-        │  POST /api/v1/analyze  (text + url)
+        │  POST /api/v2/analyze  (text + url)
         ▼
 ┌─────────────────────────────┐
 │       FastAPI Backend        │
@@ -17,11 +17,11 @@ Browser (Chrome Extension)
 │  │  │  Stage 1 (async)│  │  │
 │  │  │  ┌───────────┐  │  │  │
 │  │  │  │Summarizer │  │  │  │
-│  │  │  │  Agent    │──┼──┼──┼──► Anthropic API
+│  │  │  │  Agent    │──┼──┼──┼──► Hugging Face Models
 │  │  │  └───────────┘  │  │  │
 │  │  │  ┌───────────┐  │  │  │
 │  │  │  │  Clause   │  │  │  │
-│  │  │  │  Agent    │──┼──┼──┼──► Anthropic API
+│  │  │  │  Agent    │──┼──┼──┼──► Hugging Face Models
 │  │  │  └───────────┘  │  │  │
 │  │  └─────────────────┘  │  │
 │  │          │             │  │
@@ -29,7 +29,7 @@ Browser (Chrome Extension)
 │  │  │    Stage 2        │ │  │
 │  │  │  ┌─────────────┐  │ │  │
 │  │  │  │    Risk     │  │ │  │
-│  │  │  │   Agent     │──┼─┼──┼──► Anthropic API
+│  │  │  │   Agent     │──┼─┼──┼──► Rule-based Analysis
 │  │  │  └─────────────┘  │ │  │
 │  │  └───────────────────┘ │  │
 │  └───────────────────────┘  │
@@ -46,18 +46,21 @@ Browser (Chrome Extension)
 
 ### Agent 1: SummarizerAgent
 - **Input**: Raw T&C text
-- **Output**: Summary, key points, data collection info, user/company rights
+- **Output**: Plain-English summary
+- **Model**: Hugging Face summarization model (sshleifer/distilbart-cnn-12-6)
 - **Runs**: In parallel with ClauseAgent
 
 ### Agent 2: ClauseAgent
 - **Input**: Raw T&C text
-- **Output**: List of detected clauses with type, excerpt, explanation, severity
+- **Output**: List of detected clauses with category, text, confidence, risk level, explanation
+- **Model**: Hugging Face zero-shot classification model (facebook/bart-large-mnli)
 - **Runs**: In parallel with SummarizerAgent
 
 ### Agent 3: RiskAgent
-- **Input**: Raw T&C text + ClauseAgent output (as context)
-- **Output**: Risk scores, grade, recommendations, TL;DR
-- **Runs**: After Stages 1 & 2 complete (uses clause context)
+- **Input**: Detected clauses
+- **Output**: Risk score, level, recommendation, key concerns
+- **Logic**: Rule-based analysis of clause risks
+- **Runs**: After Stages 1 & 2 complete
 
 ## Caching Strategy
 
@@ -68,6 +71,6 @@ Results are cached by `SHA-256(text)` in an in-memory LRU cache (default 100 ent
 1. User visits a page with T&C text
 2. `content.js` detects and extracts T&C text from the DOM
 3. User clicks the extension popup → triggers analysis
-4. `api.js` POSTs text to `/api/v1/analyze`
+4. `api.js` POSTs text to `/api/v2/analyze`
 5. Backend runs 3-agent pipeline
 6. Extension renders summary, clauses, and risk score in floating box

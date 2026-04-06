@@ -20,6 +20,11 @@ chrome.runtime.onInstalled.addListener(() => {
 });
 
 chrome.contextMenus.onClicked.addListener(async (info, tab) => {
+  if (!tab || typeof tab.id !== 'number' || tab.id < 0) {
+    showNotification('Analysis Failed', 'Unable to access the active tab.');
+    return;
+  }
+
   if (info.menuItemId === 'analyzeSelection') {
     const text = info.selectionText;
     if (!text || text.length < 100) {

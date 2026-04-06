@@ -1,6 +1,5 @@
 from fastapi import APIRouter, HTTPException, status
 from ..models.schemas import AnalysisRequest, AnalysisResponse, HealthCheck
-from ..pipeline.analyzer_pipeline import AnalyzerPipeline
 from ..config import get_settings
 import logging
 
@@ -8,26 +7,30 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 settings = get_settings()
 
-# Initialize pipeline (singleton)
-pipeline = AnalyzerPipeline()
-
-@router.on_event("startup")
-async def startup_event():
-    """Initialize pipeline on startup"""
-    try:
-        pipeline.initialize()
-        logger.info("Pipeline ready")
-    except Exception as e:
-        logger.error(f"Failed to initialize: {e}")
+# Get global pipeline instance from main
+def get_pipeline():
+    """Get the global pipeline instance"""
+    from ..main import pipeline_instance
+    if pipeline_instance is None:
+        raise RuntimeError("Pipeline not initialized")
+    return pipeline_instance
 
 @router.get("/health", response_model=HealthCheck)
 async def health_check():
     """Health check endpoint"""
-    return HealthCheck(
-        status="healthy" if pipeline.is_initialized else "initializing",
-        version=settings.API_VERSION,
-        agents_loaded=pipeline.is_initialized
-    )
+    try:
+        pipeline = get_pipeline()
+        return HealthCheck(
+            status="healthy",
+            version=settings.API_VERSION,
+            agents_loaded=True
+        )
+    except RuntimeError:
+        return HealthCheck(
+            status="initializing",
+            version=settings.API_VERSION,
+            agents_loaded=False
+        )
 
 @router.post("/analyze", response_model=AnalysisResponse)
 async def analyze_terms(request: AnalysisRequest):
@@ -41,6 +44,7 @@ async def analyze_terms(request: AnalysisRequest):
     - Recommendation
     """
     try:
+        pipeline = get_pipeline()
         result = pipeline.analyze(
             text=request.text,
             url=request.url
